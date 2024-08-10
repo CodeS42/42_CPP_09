@@ -26,7 +26,7 @@ bool RNP::isOperator(char c)
 
 bool RNP::calculate()
 {
-    std::size_t i, size = formula.size();
+    std::size_t i, size = formula.size(), count_nbs = 0;
     int nb1, nb2, last = SPACE;
 
     for (i = 0 ; i < size ; i++)
@@ -36,6 +36,7 @@ bool RNP::calculate()
         else if (isdigit(formula[i]))
         {
             operands.push(formula[i] - '0');
+            count_nbs++;
             last = OPERAND;
         }
         else if (isOperator(formula[i]))
@@ -46,6 +47,7 @@ bool RNP::calculate()
                 {
                     operands.push(atoi(formula.substr(i, 2).c_str()));
                     i++;
+                    count_nbs++;
                     last = OPERAND;
                     continue;
                 }
@@ -71,7 +73,7 @@ bool RNP::calculate()
         else
             return (false);
     }
-    if (operands.size() != 1)
+    if (count_nbs < 2 || operands.size() != 1)
         return (false);
         
     std::cout << "Result: " << operands.top() << std::endl;
