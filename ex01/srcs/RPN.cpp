@@ -1,38 +1,82 @@
 #include "../headers/RPN.hpp"
 
-RNP::RNP(){}
+RPN::RPN(){}
 
-RNP::RNP(std::string input) : formula(input) {}
+RPN::RPN(std::string input) : formula(input) {}
 
-RNP::RNP(const RNP& obj)
+RPN::RPN(const RPN& obj)
 {
     (void)obj;
 }
 
-RNP& RNP::operator=(const RNP& other)
+RPN& RPN::operator=(const RPN& other)
 {
     (void)other;
     return (*this);
 }
 
-RNP::~RNP(){}
+RPN::~RPN(){}
 
-bool RNP::isOperator(char c)
+bool RPN::isOperator(char c)
 {
     if (c != '+' && c != '-' && c != '*' && c != '/')
         return (false);
     return (true);
 }
 
-bool RNP::calculate()
+int RPN::checkResult(char sign, int nb1, int nb2)
+{
+    if (sign == '+')
+    {
+        if (nb2 < 0 && nb1 < std::numeric_limits<int>::min() - nb2) 
+            return (UNDERFLOW);
+        else if (nb2 > 0 && nb1 > std::numeric_limits<int>::max() - nb2)
+            return (OVERFLOW);
+    }
+    else if (sign == '-')
+    {
+        if (nb2 > 0 && nb1 < std::numeric_limits<int>::min() + nb2)
+            return (UNDERFLOW);
+        else if (nb2 < 0 && nb1 > std::numeric_limits<int>::max() + nb2)
+            return (OVERFLOW);
+    }
+    else if (sign == '*')
+    {
+        if (nb1 > 0)
+        {
+            if (nb2 < 0 && nb2 < std::numeric_limits<int>::min() / nb1)
+                return (UNDERFLOW);
+            else if (nb2 > 0 && nb1 > std::numeric_limits<int>::max() / nb2)
+                return (OVERFLOW);
+        }
+        else if (nb1 < 0)
+        {
+            if (nb2 > 0 && nb1 < std::numeric_limits<int>::min() / nb2)
+                return (UNDERFLOW);
+            else if (nb2 < 0 && nb1 > std::numeric_limits<int>::max() / nb2)
+                return (OVERFLOW);
+        }
+    }
+    else if (sign == '/')
+    {
+        if (nb2 == 0)
+            return (DIVIDE_BY_ZERO);
+        else if (nb1 == std::numeric_limits<int>::min() && nb2 == -1)
+            return (OVERFLOW);
+    }
+
+    return (VALID_RESULT);
+}
+
+int RPN::calculate()
 {
     std::size_t i, size = formula.size(), count_nbs = 0;
-    int nb1, nb2, last = SPACE;
+    int nb1, nb2, last = SPACE, result_status;
 
     for (i = 0 ; i < size ; i++)
     {
         if ((isdigit(formula[i]) || isOperator(formula[i])) && last != SPACE)
-            return (false);
+            return (INVALID_INPUT);
         else if (isdigit(formula[i]))
         {
             operands.push(formula[i] - '0');
@@ -53,11 +97,14 @@ bool RNP::calculate()
                 }
             }
             if (operands.size() < 2)
-                return (false);
+                return (INVALID_INPUT);
             nb2 = operands.top();
             operands.pop();
             nb1 = operands.top();
             operands.pop();
+            result_status = checkResult(formula[i], nb1, nb2);
+            if (result_status != VALID_RESULT)
+                return (result_status);
             if (formula[i] == '+')
                 operands.push(nb1 + nb2);
             else if (formula[i] == '-')
@@ -71,11 +118,11 @@ bool RNP::calculate()
         else if (isspace(formula[i]))
             last = SPACE;
         else
-            return (false);
+            return (INVALID_INPUT);
     }
     if (count_nbs < 2 || operands.size() != 1)
-        return (false);
+        return (INVALID_INPUT);
         
     std::cout << "Result: " << operands.top() << std::endl;
-    return (true);
+    return (VALID_RESULT);
 }

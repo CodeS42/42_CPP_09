@@ -1,5 +1,5 @@
-#ifndef RNP_HPP
-# define RNP_HPP
+#ifndef RPN_HPP
+# define RPN_HPP
 
 # include <iostream>
 # include <stack>
@@ -10,12 +10,14 @@
 # include <cctype>
 # include <cstddef>
 # include <cstdlib>
+# include <limits>
 
-class RNP
+class RPN
 {
     private:
-        enum Character
+        enum FormulaCharacters
         {
+            INVALID_INPUT = -3,
             SPACE,
             OPERAND,
             BINARY_OPERATOR
@@ -23,15 +25,24 @@ class RNP
 
         std::stack<int, std::list<int> > operands;
         std::string formula;
-        RNP();
-        RNP(const RNP& obj);
-        RNP& operator=(const RNP& other);
+        RPN();
+        RPN(const RPN& obj);
+        RPN& operator=(const RPN& other);
     
     public:
-        RNP(std::string input);
-        ~RNP();
+        RPN(std::string input);
+        ~RPN();
         bool isOperator(char c);
-        bool calculate();
+        int calculate();
+        int checkResult(char sign, int nb1, int nb2);
+
+        enum CalculationResult
+        {
+            OVERFLOW = -2,
+            UNDERFLOW,
+            DIVIDE_BY_ZERO,
+            VALID_RESULT
+        };
 };
 
 #endif
