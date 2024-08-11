@@ -208,7 +208,7 @@ void BitcoinExchange::exchange(std::ifstream& _inputfile)
                 std::cerr << "Error: No match for this date." << std::endl;
                 continue;
             }
-            else if (it->first != substring || it == data.end())
+            else if (it == data.end() || it->first != substring)
                 it--;
 
             i = line.find('|');
